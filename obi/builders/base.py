@@ -17,13 +17,13 @@ License: Apache-2.0
     limitations under the License.
 
 Contents:
-    Bunch (Collection, ABC): base class for general containers in obi. It 
+    Bunch (Collection, Protocol): base class for general containers in obi. It 
         requires subclasses to have 'add', 'delete', and 'subset' methods.
-    Composite (ABC): base class for obi composite data structures. Requires 
-        'append', 'delete', 'merge', 'prepend', and 'walk' methods.
-    Proxy (Container): basic wrapper for a stored python object. Dunder methods 
-        attempt to intelligently apply access methods to either the wrapper or 
-        the wrapped item.   
+    Composite (Bunch, Protocol): base class for obi composite data structures. 
+        Requires 'append', 'delete', 'merge', 'prepend', and 'walk' methods.
+    Proxy (Container, Protocol): basic wrapper for a stored python object. 
+        Dunder methods attempt to intelligently apply access methods to either 
+        the wrapper or the wrapped item.   
           
 To Do:
     Integrate Kinds system when it is finished.
@@ -36,15 +36,15 @@ To Do:
 """
 from __future__ import annotations
 import abc
-from collections.abc import Collection, Container, Hashable, Iterator, Sequence
+from collections.abc import Collection, Container, Hashable, Iterator
 import dataclasses
-from typing import Any, Optional, Type, Union
+from typing import Any, Optional, Protocol, Union
 
 # from ..inspectors import represent
 
   
 @dataclasses.dataclass # type: ignore
-class Bunch(Collection, abc.ABC): # type: ignore
+class Bunch(Collection, Protocol): # type: ignore
     """Base class for general obi collections.
   
     A Bunch differs from a general python Collection in 4 ways:
@@ -179,7 +179,7 @@ class Bunch(Collection, abc.ABC): # type: ignore
     
           
 @dataclasses.dataclass
-class Composite(Bunch, abc.ABC):
+class Composite(Bunch, Protocol):
     """Base class for composite data structures.
     
     Args:
@@ -276,7 +276,7 @@ class Proxy(Container): # type: ignore
         """Returns whether 'item' is in or equivalent to 'contents'.
 
         Args:
-            item (Any): item to check versus 'contents'
+            item (Any): item to check versus 'contents'.
             
         Returns:
             bool: if 'item' is in or equivalent to 'contents' (True). Otherwise, 

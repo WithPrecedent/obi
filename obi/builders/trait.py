@@ -1,5 +1,5 @@
 """
-traits: characteristics of graphs
+trait: characteristics of graphs
 Corey Rayburn Yung <coreyrayburnyung@gmail.com>
 Copyright 2020-2022, Corey Rayburn Yung
 License: Apache-2.0
@@ -26,7 +26,7 @@ To Do:
 from __future__ import annotations
 import abc
 import dataclasses
-from typing import Any, Optional, Type, TYPE_CHECKING, Union
+from typing import Any, Optional, Protocol, Type, TYPE_CHECKING, Union
 
 if TYPE_CHECKING:
     from . import composite
@@ -35,53 +35,21 @@ if TYPE_CHECKING:
     
     
 @dataclasses.dataclass
-class Directed(abc.ABC):
+class Directed(Protocol):
     """Base class for directed graph data structures."""  
     
     """ Required Subclass Properties """
         
     @abc.abstractproperty
-    def endpoint(self) -> Optional[Union[composite.Node, composite.Nodes]]:
-        """Returns the endpoint(s) of the stored composite object."""
+    def endpoint(self) -> Union[composite.Node, composite.Nodes]:
+        """Returns the endpoint(s) of the stored graph."""
         pass
  
     @abc.abstractproperty
-    def root(self) -> Optional[Union[composite.Node, composite.Nodes]]:
-        """Returns the root(s) of the stored composite object."""
+    def root(self) -> Union[composite.Node, composite.Nodes]:
+        """Returns the root(s) of the stored graph."""
         pass
         
-    @abc.abstractproperty
-    def pipeline(self) -> hybrid.Pipeline:
-        """Returns the stored composite object as a Pipeline."""
-        pass
-        
-    @abc.abstractproperty
-    def pipelines(self) -> hybrid.Pipelines:
-        """Returns the stored composite object as a Pipelines."""
-        pass
-            
-    @abc.abstractproperty
-    def tree(self) -> tree.Tree:
-        """Returns the stored composite object as a Tree."""
-        pass
-                 
-    """ Required Subclass Class Methods """
-    
-    @abc.abstractclassmethod
-    def from_pipeline(cls, item: hybrid.Pipeline) -> Directed:
-        """Creates an instance from a Pipeline."""
-        pass
-    
-    @abc.abstractclassmethod
-    def from_pipelines(cls, item: hybrid.Pipelines) -> Directed:
-        """Creates an instance from a Pipelines."""
-        pass
-
-    @abc.abstractclassmethod
-    def from_tree(cls, item: tree.Tree) -> Directed:
-        """Creates an instance from a Tree."""
-        pass
-                 
     """ Required Subclass Methods """
     
     @abc.abstractmethod
@@ -90,7 +58,7 @@ class Directed(abc.ABC):
         item: Union[composite.Node, composite.Graph], 
         *args: Any, 
         **kwargs: Any) -> None:
-        """Appends 'item' to the endpoint(s) of the stored composite object.
+        """Appends 'item' to the endpoint(s) of the stored graph.
 
         Args:
             item (Union[composite.Node, composite.Graph]): a Node or Graph to 
@@ -105,7 +73,7 @@ class Directed(abc.ABC):
         item: Union[composite.Node, composite.Graph], 
         *args: Any, 
         **kwargs: Any) -> None:
-        """Prepends 'item' to the root(s) of the stored composite object.
+        """Prepends 'item' to the root(s) of the stored graph.
 
         Args:
             item (Union[composite.Node, composite.Graph]): a Node or Graph to 
@@ -123,7 +91,7 @@ class Directed(abc.ABC):
         return_pipelines: bool = True, 
         *args: Any, 
         **kwargs: Any) -> Union[hybrid.Pipeline, hybrid.Pipelines]:
-        """Returns path in the stored composite object from 'start' to 'stop'.
+        """Returns path in the stored graph from 'start' to 'stop'.
         
         Args:
             start (Optional[composite.Node]): Node to start paths from. 

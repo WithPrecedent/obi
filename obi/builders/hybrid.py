@@ -23,180 +23,94 @@ To Do:
     Add methods needed for Composite subclassing.
     
 """
-from __future__ import annotations
-import abc
-from collections.abc import (
-    Collection, Hashable, Mapping, MutableMapping, MutableSequence, Sequence)
-import dataclasses
-from typing import Any, Callable, ClassVar, Optional, Type, TypeVar, Union
+# from __future__ import annotations
+# import abc
+# from collections.abc import (
+#     Collection, Hashable, Mapping, MutableMapping, MutableSequence, Sequence)
+# import dataclasses
+# from typing import Any, Callable, ClassVar, Optional, Type, TypeVar, Union
 
-from . import base
-from . import composite
-from . import mapping
-from . import sequence
-from ..inspectors import check
+# from . import base
+# from . import composite
+# from . import mapping
+# from . import sequence
+# from ..inspectors import check
  
  
-@dataclasses.dataclass # type: ignore
-class Pipeline(sequence.Hybrid, base.Composite):
-    """Base class for pipeline data structures.
+
+ 
+# @dataclasses.dataclass # type: ignore
+# class Pipelines(sequence.Hybrid, base.Composite):
+#     """Base class a collection of Pipeline instances.
+        
+#     Args:
+#         contents (MutableSequence[composite.Node]): list of stored Pipeline instances. 
+#             Defaults to an empty list.
+
+#     """
+#     contents: MutableSequence[Pipeline] = dataclasses.field(
+#         default_factory = list)
+
+#     """ Properties """
+
+#     def endpoint(self) -> Pipeline:
+#         """Returns the endpoint of the stored composite object."""
+#         return self.contents[list(self.contents.keys())[-1]]
+
+#     def root(self) -> Pipeline:
+#         """Returns the root of the stored composite object."""
+#         self.contents[list(self.contents.keys())[0]]
     
-    Args:
-        contents (MutableSequence[composite.Node]): list of stored Node instances. 
-            Defaults to an empty list.
-          
-    """
-    contents: MutableSequence[composite.Node] = dataclasses.field(
-        default_factory = list)
-
-    """ Properties """
-
-    def endpoint(self) -> composite.Node:
-        """Returns the endpoint of the stored composite object."""
-        return self.contents[-1]
-
-    def root(self) -> composite.Node:
-        """Returns the root of the stored composite object."""
-        return self.contents[0]
-    
-    """ Public Methods """
-        
-    def delete(self, item: Any) -> None:
-        """Deletes composite.Node from the stored composite object.
-        
-        Args:
-            item (Any): composite.Node or key to the a composite.Node to delete.
-        
-        Raises:
-            KeyError: if 'item' is not in 'contents'.
-            
-        """
-        self.__delitem__(item)
+#     """ Public Methods """
   
-    def merge(item: base.Composite, *args: Any, **kwargs: Any) -> None:
-        """Combines 'item' with the stored composite object.
+#     def merge(item: base.Composite, *args: Any, **kwargs: Any) -> None:
+#         """Combines 'item' with the stored composite object.
 
-        Args:
-            item (Composite): another Composite object to add to the stored 
-                composite object.
+#         Args:
+#             item (Composite): another Composite object to add to the stored 
+#                 composite object.
                 
-        """
-        pass
-   
-    def walk(
-        self, 
-        start: Optional[composite.Node] = None,
-        stop: Optional[composite.Node] = None, 
-        path: Optional[Pipeline] = None,
-        return_pipelines: bool = False, 
-        *args: Any, 
-        **kwargs: Any) -> Pipeline:
-        """Returns path in the stored composite object from 'start' to 'stop'.
-        
-        Args:
-            start (Optional[composite.Node]): composite.Node to start paths from. Defaults to None.
-                If it is None, 'start' should be assigned to one of the roots
-                of the Composite.
-            stop (Optional[composite.Node]): composite.Node to stop paths. Defaults to None. If it 
-                is None, 'start' should be assigned to one of the roots of the 
-                Composite.
-            path (Optional[hybrid.Pipeline]): a path from 'start' to 'stop'. 
-                Defaults to None. This parameter is used by recursive methods 
-                for determining a path.
-            return_pipelines (bool): whether to return a Pipelines instance 
-                (True) or a hybrid.Pipeline instance (False). Defaults to True.
+#         """
+#         pass
 
-        Returns:
-            Union[hybrid.Pipeline, hybrid.Pipelines]: path(s) through the 
-                Composite object. If multiple paths are possible and 
-                'return_pipelines' is False, this method should return a 
-                Pipeline that includes all such paths appended to each other. If 
-                multiple paths are possible and 'return_pipelines' is True, a 
-                Pipelines instance with all of the paths should be returned. 
-                Defaults to True.
+#     def walk(
+#         self, 
+#         start: Optional[composite.Node] = None,
+#         stop: Optional[composite.Node] = None, 
+#         path: Optional[Pipeline] = None,
+#         return_pipelines: bool = True, 
+#         *args: Any, 
+#         **kwargs: Any) -> Union[Pipeline, Pipelines]:
+#         """Returns path in the stored composite object from 'start' to 'stop'.
+        
+#         Args:
+#             start (Optional[composite.Node]): composite.Node to start paths from. Defaults to None.
+#                 If it is None, 'start' should be assigned to one of the roots
+#                 of the Composite.
+#             stop (Optional[composite.Node]): composite.Node to stop paths. Defaults to None. If it 
+#                 is None, 'start' should be assigned to one of the roots of the 
+#                 Composite.
+#             path (Optional[hybrid.Pipeline]): a path from 'start' to 'stop'. 
+#                 Defaults to None. This parameter is used by recursive methods 
+#                 for determining a path.
+#             return_pipelines (bool): whether to return a Pipelines instance 
+#                 (True) or a hybrid.Pipeline instance (False). Defaults to True.
+
+#         Returns:
+#             Union[hybrid.Pipeline, hybrid.Pipelines]: path(s) through the 
+#                 Composite object. If multiple paths are possible and 
+#                 'return_pipelines' is False, this method should return a 
+#                 Pipeline that includes all such paths appended to each other. If 
+#                 multiple paths are possible and 'return_pipelines' is True, a 
+#                 Pipelines instance with all of the paths should be returned. 
+#                 Defaults to True.
                             
-        """
-        return self.contents
-    
-    """ Dunder Methods """
+#         """
+#         return self.items()
         
-    @classmethod
-    def __instancecheck__(cls, instance: object) -> bool:
-        return check.is_pipeline(item = instance)
-     
- 
-@dataclasses.dataclass # type: ignore
-class Pipelines(sequence.Hybrid, base.Composite):
-    """Base class a collection of Pipeline instances.
+#     """ Dunder Methods """
         
-    Args:
-        contents (MutableSequence[composite.Node]): list of stored Pipeline instances. 
-            Defaults to an empty list.
-
-    """
-    contents: MutableSequence[Pipeline] = dataclasses.field(
-        default_factory = list)
-
-    """ Properties """
-
-    def endpoint(self) -> Pipeline:
-        """Returns the endpoint of the stored composite object."""
-        return self.contents[list(self.contents.keys())[-1]]
-
-    def root(self) -> Pipeline:
-        """Returns the root of the stored composite object."""
-        self.contents[list(self.contents.keys())[0]]
-    
-    """ Public Methods """
-  
-    def merge(item: base.Composite, *args: Any, **kwargs: Any) -> None:
-        """Combines 'item' with the stored composite object.
-
-        Args:
-            item (Composite): another Composite object to add to the stored 
-                composite object.
-                
-        """
-        pass
-
-    def walk(
-        self, 
-        start: Optional[composite.Node] = None,
-        stop: Optional[composite.Node] = None, 
-        path: Optional[Pipeline] = None,
-        return_pipelines: bool = True, 
-        *args: Any, 
-        **kwargs: Any) -> Union[Pipeline, Pipelines]:
-        """Returns path in the stored composite object from 'start' to 'stop'.
-        
-        Args:
-            start (Optional[composite.Node]): composite.Node to start paths from. Defaults to None.
-                If it is None, 'start' should be assigned to one of the roots
-                of the Composite.
-            stop (Optional[composite.Node]): composite.Node to stop paths. Defaults to None. If it 
-                is None, 'start' should be assigned to one of the roots of the 
-                Composite.
-            path (Optional[hybrid.Pipeline]): a path from 'start' to 'stop'. 
-                Defaults to None. This parameter is used by recursive methods 
-                for determining a path.
-            return_pipelines (bool): whether to return a Pipelines instance 
-                (True) or a hybrid.Pipeline instance (False). Defaults to True.
-
-        Returns:
-            Union[hybrid.Pipeline, hybrid.Pipelines]: path(s) through the 
-                Composite object. If multiple paths are possible and 
-                'return_pipelines' is False, this method should return a 
-                Pipeline that includes all such paths appended to each other. If 
-                multiple paths are possible and 'return_pipelines' is True, a 
-                Pipelines instance with all of the paths should be returned. 
-                Defaults to True.
-                            
-        """
-        return self.items()
-        
-    """ Dunder Methods """
-        
-    @classmethod
-    def __instancecheck__(cls, instance: object) -> bool:
-        return check.is_pipelines(item = instance)
+#     @classmethod
+#     def __instancecheck__(cls, instance: object) -> bool:
+#         return check.is_pipelines(item = instance)
          

@@ -43,8 +43,8 @@ Contents:
         is_matrix: returns whether an item is an adjacency matrix.
         is_edges: returns whether an item is a colleciton of edges.
         is_graph: returns whether an item is a graph.
-        is_pipeline: returns whether an item is a pipeline of nodes.
-        is_pipelines: returns whether an item is a collection of pipelines.
+        is_linear: returns whether an item is a linear path of nodes.
+        is_linears: returns whether an item is a collection of linears.
         is_tree: returns whether an item is a tree.
         is_forest: returns whether an item is a collection of tree.
     Attribute Checkers:
@@ -225,8 +225,6 @@ def serial_contains(
         
     """
     return all(isinstance(i, contents) for i in item)
-
-""" Simple Type Checkers """
     
 """ Simple Type Checkers """
     
@@ -523,14 +521,14 @@ def is_graph(item: object) -> bool:
         or is_matrix(item = item)
         or is_edges(item = item))
 
-def is_pipeline(item: object) -> bool:
-    """Returns whether 'item' is a pipeline.
+def is_linear(item: object) -> bool:
+    """Returns whether 'item' is a linear.
 
     Args:
         item (object): instance to test.
 
     Returns:
-        bool: whether 'item' is a pipeline.
+        bool: whether 'item' is a linear.
     
     """
     return (
@@ -538,20 +536,20 @@ def is_pipeline(item: object) -> bool:
         and not isinstance(item, str)
         and all(is_node(item = i) for i in item))
 
-def is_pipelines(item: object) -> bool:
-    """Returns whether 'item' is a sequence of pipelines.
+def is_linears(item: object) -> bool:
+    """Returns whether 'item' is a sequence of linears.
 
     Args:
         item (object): instance to test.
 
     Returns:
-        bool: whether 'item' is a sequence of pipelines.
+        bool: whether 'item' is a sequence of linears.
     
     """
     return (
         isinstance(item, Sequence)
         and not isinstance(item, str)
-        and all(is_pipeline(item = i) for i in item)) 
+        and all(is_linear(item = i) for i in item)) 
 
 def is_tree(item: object) -> bool:
     """Returns whether 'item' is a tree.

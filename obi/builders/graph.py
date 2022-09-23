@@ -1,5 +1,5 @@
 """
-graphs: lightweight graph data structures
+graph: lightweight graph data structures
 Corey Rayburn Yung <coreyrayburnyung@gmail.com>
 Copyright 2020-2022, Corey Rayburn Yung
 License: Apache-2.0
@@ -24,7 +24,6 @@ To Do:
     
 """
 from __future__ import annotations
-import abc
 import collections
 from collections.abc import (
     Collection, Hashable, MutableMapping, MutableSequence, Sequence, Set)
@@ -33,17 +32,79 @@ import dataclasses
 import itertools
 from typing import Any, Optional, Type, TYPE_CHECKING, Union
 
+from . import base
 from . import composite
 from . import form
 from . import hybrid
 from . import trait
-from . import tree
 from ..inspectors import check
 from ..organizers import convert
     
+
+@dataclasses.dataclass # type: ignore
+class Pipeline(trait.Directed, form.Linear, composite.Graph):
+    """Linear, directed pipeline graph.
     
+    Args:
+        contents (MutableSequence[composite.Node]): list of stored Node 
+            instances. Defaults to an empty list.
+          
+    """
+    contents: MutableSequence[composite.Node] = dataclasses.field(
+        default_factory = list)
+
+    """ Properties """
+    
+    @property
+    def endpoint(self) -> composite.Node:
+        """Returns the endpoint(s) of the stored graph."""
+        return self.contents[-1]
+    
+    @property
+    def root(self) -> composite.Node:
+        """Returns the root(s) of the stored graph."""
+        return self.contents[0]
+    
+    """ Public Methods """
+   
+    def walk(
+        self, 
+        start: Optional[composite.Node] = None,
+        stop: Optional[composite.Node] = None, 
+        path: Optional[Pipeline] = None,
+        return_pipelines: bool = False, 
+        *args: Any, 
+        **kwargs: Any) -> Pipeline:
+        """Returns path in the stored composite object from 'start' to 'stop'.
+        
+        Args:
+            start (Optional[composite.Node]): composite.Node to start paths from. Defaults to None.
+                If it is None, 'start' should be assigned to one of the roots
+                of the Composite.
+            stop (Optional[composite.Node]): composite.Node to stop paths. Defaults to None. If it 
+                is None, 'start' should be assigned to one of the roots of the 
+                Composite.
+            path (Optional[hybrid.Pipeline]): a path from 'start' to 'stop'. 
+                Defaults to None. This parameter is used by recursive methods 
+                for determining a path.
+            return_pipelines (bool): whether to return a Pipelines instance 
+                (True) or a hybrid.Pipeline instance (False). Defaults to True.
+
+        Returns:
+            Union[hybrid.Pipeline, hybrid.Pipelines]: path(s) through the 
+                Composite object. If multiple paths are possible and 
+                'return_pipelines' is False, this method should return a 
+                Pipeline that includes all such paths appended to each other. If 
+                multiple paths are possible and 'return_pipelines' is True, a 
+                Pipelines instance with all of the paths should be returned. 
+                Defaults to True.
+                            
+        """
+        return self.contents
+    
+        
 @dataclasses.dataclass
-class System(form.Adjacency, trait.Directed):
+class System(form.Adjacency, trait.Directed, composite.Graph):
     """Directed graph with unweighted edges stored as an adjacency list.
     
     Args:
@@ -60,13 +121,13 @@ class System(form.Adjacency, trait.Directed):
     """ Properties """
 
     @property
-    def endpoint(self) -> set[composite.Node]:
-        """Returns endpoint nodes in the stored graph in a list."""
+    def endpoint(self) -> Union[composite.Node, composite.Nodes]:
+        """Returns the endpoint(s) of the stored graph."""
         return {k for k in self.contents.keys() if not self.contents[k]}
                     
     @property
-    def root(self) -> set[composite.Node]:
-        """Returns root nodes in the stored graph in a list."""
+    def root(self) -> Union[composite.Node, composite.Nodes]:
+        """Returns the root(s) of the stored graph."""
         stops = list(itertools.chain.from_iterable(self.contents.values()))
         return {k for k in self.contents.keys() if k not in stops}
                       
@@ -178,14 +239,14 @@ class System(form.Adjacency, trait.Directed):
                     self.connect(start = start, stop = node)                 
         return 
 
-    def append(self, item: composite.Composite) -> None:
+    def append(self, item: composite.Graph) -> None:
         """Appends 'item' to the endpoints of the stored graph.
 
         Appending creates an edge between every endpoint of this instance's
         stored graph and the every root of 'item'.
 
         Args:
-            item (composite.Composite): another Graph, 
+            item (composite.Graph): another Graph, 
                 an adjacency list, an edge list, an adjacency matrix, or one or
                 more nodes.
             
@@ -194,7 +255,7 @@ class System(form.Adjacency, trait.Directed):
                 or composite.Nodes type.
                 
         """
-        if isinstance(item, composite.Composite):
+        if isinstance(item, composite.Graph):
             current_endpoints = list(self.endpoint)
             new_graph = self.create(item = item)
             self.merge(item = new_graph)
@@ -262,7 +323,7 @@ class System(form.Adjacency, trait.Directed):
             raise KeyError(f'{start} does not exist in the graph')
         return
 
-    def merge(self, item: composite.Composite) -> None:
+    def merge(self, item: composite.Graph) -> None:
         """Adds 'item' to this Graph.
 
         This method is roughly equivalent to a dict.update, just adding the
@@ -270,7 +331,7 @@ class System(form.Adjacency, trait.Directed):
         adjacency list that is then added to the existing 'contents'.
         
         Args:
-            item (composite.Composite): another Graph, an adjacency 
+            item (composite.Graph): another Graph, an adjacency 
                 list, an edge list, an adjacency matrix, or one or more nodes.
             
         Raises:
@@ -295,14 +356,14 @@ class System(form.Adjacency, trait.Directed):
         self.contents.update(adjacency)
         return
 
-    def prepend(self, item: composite.Composite) -> None:
+    def prepend(self, item: composite.Graph) -> None:
         """Prepends 'item' to the roots of the stored graph.
 
         Prepending creates an edge between every endpoint of 'item' and every
         root of this instance;s stored graph.
 
         Args:
-            item (composite.Composite): another Graph, an adjacency list, an 
+            item (composite.Graph): another Graph, an adjacency list, an 
                 edge list, an adjacency matrix, or one or more nodes.
             
         Raises:
@@ -310,7 +371,7 @@ class System(form.Adjacency, trait.Directed):
                 or composite.Nodes type.
                 
         """
-        if isinstance(item, composite.Composite):
+        if isinstance(item, composite.Graph):
             current_roots = list(self.root)
             new_graph = self.create(item = item)
             self.merge(item = new_graph)
@@ -427,6 +488,7 @@ class System(form.Adjacency, trait.Directed):
         return all_paths
 
 
+    
 # @dataclasses.dataclass
 # class Network(Graph):
 #     """composites class for undirected graphs with unweighted edges.
@@ -1070,3 +1132,377 @@ class System(form.Adjacency, trait.Directed):
 #             summary.append(f'{tab}{node}: {str(edges)}')
 #         return new_line.join(summary) 
 
+# Changer: Type[Any] = Callable[[composite.Node], None]
+# Finder: Type[Any] = Callable[[composite.Node], Optional[composite.Node]]
+
+
+
+
+# @dataclasses.dataclass # type: ignore
+# class Categorizer(Tree):
+#     """composites class for an tree data structures.
+        
+#     Args:
+#         contents (MutableSequence[composite.Node]): list of stored Node 
+#             instances (including other Trees). Defaults to an empty list.
+#         name (Optional[str]): name of Tree node which should match a parent 
+#             tree's key name corresponding to this Tree node. All nodes in a Tree
+#             must have unique names. The name is used to make all Tree nodes 
+#             hashable and capable of quick comparison. Defaults to None, but it
+#             should not be left as None when added to a Tree.
+#         parent (Optional[Tree]): parent Tree, if any. Defaults to None.
+        
+#     """
+#     contents: MutableSequence[composite.Node] = dataclasses.field(
+#         default_factory = list)
+#     name: Optional[str] = None
+#     parent: Optional[Tree] = None 
+    
+#     """ Properties """
+        
+#     @property
+#     def branches(self) -> list[Tree]:
+#         """Returns all stored Tree nodes in a list."""
+#         return self.nodes - self.leaves
+    
+#     @property
+#     def children(self) -> dict[str, composite.Node]:
+#         """[summary]
+
+#         Returns:
+#             dict[str, composite.Node]: [description]
+#         """
+#         return self.contents
+    
+#     @property
+#     def is_leaf(self) -> bool:
+#         """[summary]
+
+#         Returns:
+#             bool: [description]
+#         """
+#         return not self.children
+    
+#     @property
+#     def is_root(self) -> bool:
+#         """[summary]
+
+#         Returns:
+#             bool: [description]
+#         """
+#         return self.parent is None
+    
+#     @property
+#     def leaves(self) -> list[composite.Node]:
+#         """Returns all stored leaf nodes in a list."""
+#         matches = []
+#         for node in self.nodes:
+#             if not hasattr(node, 'is_leaf') or node.is_leaf:
+#                 matches.append(node)
+#         return matches
+     
+#     @property
+#     def nodes(self) -> list[composite.Node]:
+#         """Returns all stored nodes in a list."""
+#         return depth_first_search(tree = self.contents)
+
+#     @property
+#     def root(self) -> Tree:
+#         """
+#         """
+#         composites = [n.is_root for n in self.nodes]
+#         if len(composites) > 1:
+#             raise ValueError('The tree is broken - it has more than 1 root')
+#         elif len(composites) == 0:
+#             raise ValueError('The tree is broken - it has no root')
+#         else:
+#             return composites[0]
+    
+#     """ Public Methods """
+    
+#     def add(
+#         self, 
+#         item: Union[composite.Node, Sequence[composite.Node]],
+#         parent: Optional[str] = None) -> None:
+#         """Adds node(s) in item to 'contents'.
+        
+#         In adding the node(s) to the stored tree, the 'parent' attribute for the
+#         node(s) is set to this Tree instance.
+
+#         Args:
+#             item (Union[composite.Node, Sequence[composite.Node]]): node(s) to 
+#                 add to the 'contents' attribute.
+
+#         Raises:
+#             ValueError: if 'item' already is in the stored tree or if 'parent'
+#                 is not in the tree.
+                            
+#         """
+#         if parent is None:
+#             parent_node = self
+#         else:
+#             parent_node = self.get(item = parent)
+#         if parent_node is None:
+#             raise ValueError(
+#                 f'Cannot add {item.name} because parent node {parent} is not '
+#                 f'in the tree')
+#         if isinstance(item, Sequence) and not isinstance(item, str):
+#             for node in item:
+#                 self.add(item = node)
+#         elif item in self.nodes:
+#             raise ValueError(
+#                 f'Cannot add {item.name} because it is already in the tree')
+#         else:
+#             item.parent = parent_node
+#             parent_node.contents.append(item)
+#         return
+    
+#     def find(self, finder: Finder, **kwargs: Any) -> Optional[composite.Node]:
+#         """Finds first matching node in Tree using 'finder'.
+
+#         Args:
+#             finder (Callable[[composite.Node], Optional[composite.Node]]): 
+#                 function or other callable that returns a node if it meets 
+#                 certain criteria or otherwise returns None.
+#             kwargs: keyword arguments to pass to 'finder' when examing each
+#                 node.
+
+#         Returns:
+#             Optional[composite.Node]: matching Node or None if no matching node 
+#                 is found.
+            
+#         """                  
+#         for node in self.nodes:
+#             comparison = finder(self, **kwargs)
+#             if comparison:
+#                 return node
+#         return None
+            
+#     def find_add(
+#         self, 
+#         finder: Finder, 
+#         item: composite.Node, 
+#         **kwargs: Any) -> None:
+#         """Finds first matching node in Tree using 'finder'.
+
+#         Args:
+#             finder (Callable[[composite.Node], Optional[composite.Node]]): 
+#                 function or other callable that returns a node if it meets 
+#                 certain criteria or otherwise returns None.
+#             item (composite.Node): node to add to the 'contents' attribute of 
+#                 the first node that meets criteria in 'finder'.
+#             kwargs: keyword arguments to pass to 'finder' when examing each
+#                 node.
+
+#         Raises:
+#             ValueError: if no matching node is found by 'finder'.
+
+#         Returns:
+#             Optional[composite.Node]: matching Node or None if no matching node 
+#                 is found.
+            
+#         """  
+#         node = self.find(finder = finder, **kwargs)
+#         if node:
+#             node.add(item = item)
+#         else:
+#             raise ValueError(
+#                 'item could not be added because no matching node was found by '
+#                 'finder')
+#         return
+    
+#     def find_all(self, finder: Finder, **kwargs: Any) -> list[composite.Node]:
+#         """Finds all matching nodes in Tree using 'finder'.
+
+#         Args:
+#             finder (Callable[[composite.Node], Optional[composite.Node]]): 
+#                 function or other callable that returns a node if it meets 
+#                 certain criteria or otherwise returns None.
+#             kwargs: keyword arguments to pass to 'finder' when examing each
+#                 node.
+
+#         Returns:
+#             list[composite.Node]: matching nodes or an empty list if no 
+#                 matching node is found.
+            
+#         """              
+#         found = []     
+#         for node in self.nodes:
+#             comparison = finder(self, **kwargs)
+#             if comparison:
+#                 found.append(node)
+#         return found
+            
+#     def find_change(
+#         self, 
+#         finder: Finder, 
+#         changer: Changer, 
+#         **kwargs: Any) -> None:
+#         """Finds matching nodes in Tree using 'finder' and applies 'changer'.
+
+#         Args:
+#             finder (Callable[[composite.Node], Optional[composite.Node]]): 
+#                 function or other callable that returns a node if it meets 
+#                 certain criteria or otherwise returns None.
+#             changer (Callable[[composite.Node], None]): function or other 
+#                 callable that modifies the found node.
+#             kwargs: keyword arguments to pass to 'finder' when examing each
+#                 node.
+
+#         Raises:
+#             ValueError: if no matching node is found by 'finder'.
+            
+#         """  
+#         nodes = self.find_all(finder = finder, **kwargs)
+#         if nodes:
+#             for node in nodes:
+#                 changer(node)
+#         else:
+#             raise ValueError(
+#                 'changer could not be applied because no matching node was '
+#                 'found by finder')
+#         return
+    
+#     def get(self, item: str) -> Optional[composite.Node]:
+#         """Finds first matching node in Tree match 'item'.
+
+#         Args:
+#             item (str): 
+
+#         Returns:
+#             Optional[composite.Node]: matching Node or None if no matching node 
+#                 is found.
+            
+#         """                  
+#         for node in self.nodes:
+#             if node.name == item:
+#                 return node
+#         return self.__missing__()
+                                    
+#     def walk(self, depth_first: bool = True) -> composite.Pipeline:
+#         """Returns all paths in tree from 'start' to 'stop'.
+        
+#         Args:
+#             depth_first (bool): whether to search through the stored tree depth-
+#                 first (True) or breadth_first (False). Defaults to True.
+                
+#         """
+#         if depth_first:
+#             return depth_first_search(tree = self.contents)
+#         else:
+#             raise NotImplementedError(
+#                 'breadth first search is not yet implemented')
+#             # return breadth_first_search(tree = self.contents)
+
+#     """ Dunder Methods """
+
+#     def __add__(self, other: composite.Graph) -> None:
+#         """Adds 'other' to the stored tree using the 'append' method.
+
+#         Args:
+#             other (composite.Graph): another Composite or supported
+#                 raw data structure.
+            
+#         """
+#         self.append(item = other)     
+#         return 
+
+#     def __radd__(self, other: composite.Graph) -> None:
+#         """Adds 'other' to the stored tree using the 'prepend' method.
+
+#         Args:
+#             other (composite.Graph): another Composite or supported
+#                 raw data structure.
+            
+#         """
+#         self.prepend(item = other)     
+#         return 
+
+#     def __missing__(self) -> dict[str, Tree]:
+#         """[summary]
+
+#         Returns:
+#             dict[str, Tree]: [description]
+            
+#         """
+#         return {}
+    
+#     def __hash__(self) -> int:
+#         """[summary]
+
+#         Returns:
+#             int: [description]
+            
+#         """
+#         return hash(self.name)
+
+#     def __eq__(self, other: Any) -> bool:
+#         """[summary]
+
+#         Args:
+#             other (Any): [description]
+
+#         Returns:
+#             bool: [description]
+            
+#         """
+#         if hasattr(other, 'name'):
+#             return other.name == self.name
+#         else:
+#             return False
+        
+#     def __ne__(self, other: Any) -> bool:
+#         """[summary]
+
+#         Args:
+#             other (Any): [description]
+
+#         Returns:
+#             bool: [description]
+            
+#         """
+#         return not self.__eq__(other = other)
+
+
+# def breadth_first_search(
+#     tree: Tree, 
+#     visited: Optional[list[Tree]] = None) -> composite.Pipeline:
+#     """Returns a breadth first search path through 'tree'.
+
+#     Args:
+#         tree (Tree): tree to search.
+#         visited (Optional[list[Tree]]): list of visited nodes. Defaults to None.
+
+#     Returns:
+#         composite.Pipeline: nodes in a path through 'tree'.
+        
+#     """         
+#     visited = visited or []
+#     if hasattr(tree, 'is_root') and tree.is_root:
+#         visited.append(tree)
+#     if hasattr(tree, 'children') and tree.children:
+#         visited.extend(tree.children)
+#         for child in tree.children:
+#             visited.extend(breadth_first_search(tree = child, visited = visited))
+#     return visited
+                
+                     
+# def depth_first_search(
+#     tree: Tree, 
+#     visited: Optional[list[Tree]] = None) -> composite.Pipeline:
+#     """Returns a depth first search path through 'tree'.
+
+#     Args:
+#         tree (Tree): tree to search.
+#         visited (Optional[list[Tree]]): list of visited nodes. Defaults to None.
+
+#     Returns:
+#         composite.Pipeline: nodes in a path through 'tree'.
+        
+#     """  
+#     visited = visited or []
+#     visited.append(tree)
+#     if hasattr(tree, 'children') and tree.children:
+#         for child in tree.children:
+#             visited.extend(depth_first_search(tree = child, visited = visited))
+#     return visited

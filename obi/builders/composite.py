@@ -1,5 +1,5 @@
 """
-composites: extensible, flexible, lightweight complex data structures
+composite: extensible, flexible, lightweight complex data structures
 Corey Rayburn Yung <coreyrayburnyung@gmail.com>
 Copyright 2020-2022, Corey Rayburn Yung
 License: Apache-2.0
@@ -20,10 +20,10 @@ Contents:
     Edge (Sequence): base class for an edge in a graph. Many graphs will not
         require edge instances, but the class is made available for more complex 
         graphs and type checking.
-    Graph (base.Composite, ABC): base class for graphs. All subclasses 
+    Graph (base.Composite, Protocol): base class for graphs. All subclasses 
         must have 'connect' and 'disconnect' methods for changing edges between
         nodes.
-    Node (object): wrapper for items that can be stored in a Graph or other
+    Node (base.Proxy): wrapper for items that can be stored in a Graph or other
         data structure.  
     Nodes (bunches.Bunch): any collection of Node instances. This is primarily
         intended for easy type checking of any arbitrary group of objects to 
@@ -39,8 +39,7 @@ from __future__ import annotations
 import abc
 from collections.abc import Collection, Sequence
 import dataclasses
-import inspect
-from typing import Any, ClassVar, Optional, Type, TYPE_CHECKING, Union
+from typing import Any, Optional, Protocol, Type, TYPE_CHECKING, Union
 
 from . import base
 from ..inspectors import check
@@ -108,7 +107,7 @@ class Edge(Sequence):
     
 
 @dataclasses.dataclass # type: ignore
-class Graph(base.Composite, abc.ABC):
+class Graph(base.Composite, Protocol):
     """Base class for graph data structures.
     
     Args:
@@ -128,12 +127,22 @@ class Graph(base.Composite, abc.ABC):
     def edges(self) -> form.Edges:
         """Returns the stored graph as an Edges."""
         pass
-       
+
+    @abc.abstractproperty
+    def linear(self) -> form.Linear:
+        """Returns the stored graph as a Linear."""
+        pass
+           
     @abc.abstractproperty
     def matrix(self) -> form.Matrix:
         """Returns the stored graph as a Matrix."""
         pass
-       
+           
+    @property
+    def tree(self) -> form.Tree:
+        """Returns the stored graph as a Tree."""
+        pass     
+     
     """ Required Subclass Methods """
     
     @abc.abstractclassmethod
@@ -147,10 +156,20 @@ class Graph(base.Composite, abc.ABC):
         pass
     
     @abc.abstractclassmethod
+    def from_linear(cls, item: form.Linear) -> Graph:
+        """Creates a Graph instance from a Linear."""
+        pass
+        
+    @abc.abstractclassmethod
     def from_matrix(cls, item: form.Matrix) -> Graph:
         """Creates a Graph instance from a Matrix."""
         pass
-        
+            
+    @classmethod
+    def from_tree(cls, item: form.Tree) -> Graph:
+        """Creates an Edges instance from a Tree."""
+        pass
+            
     """ Dunder Methods """
     
     @classmethod
@@ -278,7 +297,7 @@ class Node(base.Proxy):
 
  
 @dataclasses.dataclass
-class Nodes(base.Bunch):
+class Nodes(base.Bunch, Protocol):
     """Collection of Nodes.
     
     Nodes are not guaranteed to be in order. 

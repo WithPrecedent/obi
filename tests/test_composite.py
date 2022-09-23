@@ -1,5 +1,5 @@
 """
-test_core: unit tests for obi data structures
+test_composite: unit tests for obi data structures
 Corey Rayburn Yung <coreyrayburnyung@gmail.com>
 Copyright 2020-2021, Corey Rayburn Yung
 License: Apache-2.0 (https://www.apache.org/licenses/LICENSE-2.0)
@@ -29,7 +29,7 @@ class EvenAnother(obi.Node):
 
 def test_graph() -> None:
     edges = tuple([('a', 'b'), ('c', 'd'), ('a', 'd'), ('d', 'e')])
-    dag = obi.System.create(item = edges)
+    dag = obi.System.from_edges(item = edges)
     dag.add(node = 'cat')
     dag.add(node = 'dog', ancestors = 'e', descendants = ['cat'])
     assert dag['dog'] == {'cat'}
@@ -39,7 +39,7 @@ def test_graph() -> None:
         'house': set(),
         'yard': set()}
     assert obi.Adjacency.__instancecheck__(adjacency)
-    another_dag = obi.System.create(item = adjacency)
+    another_dag = obi.System.from_adjacency(item = adjacency)
     dag.append(item = another_dag)
     assert dag['cat'] == {'tree'}
     pipelines = dag.pipelines 

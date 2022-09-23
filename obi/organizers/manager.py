@@ -63,8 +63,8 @@ formats: mapping.Dictionary[str, formats.FileFormat] = mapping.Dictionary(
             name = 'csv',
             module =  'csv',
             extension = '.csv',
-            loader = formats.pickle_object,
-            saver = formats.unpickle_object),
+            loader = formats.load_pickle,
+            saver = formats.save_pickle),
         'json': formats.FileFormat(
             name = 'json',
             module =  'pandas',

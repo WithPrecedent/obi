@@ -56,8 +56,8 @@ Contents:
     to_adjacency
     edges_to_adjacency
     matrix_to_adjacency
-    pipeline_to_adjacency
-    pipelines_to_adjacency
+    linear_to_adjacency
+    linears_to_adjacency
     tree_to_adjacency
     nodes_to_adjacency
     to_edges
@@ -767,27 +767,27 @@ def to_node(
             item.name = namify(item = item)
     return item
 
-# @functools.singledispatch
-def to_adjacency(item: Any) -> form.Adjacency:
-    """Converts 'item' to an Adjacency.
+# # @functools.singledispatch
+# def to_adjacency(item: Any) -> form.Adjacency:
+#     """Converts 'item' to an Adjacency.
     
-    Args:
-        item (Any): item to convert to an Adjacency.
+#     Args:
+#         item (Any): item to convert to an Adjacency.
 
-    Raises:
-        TypeError: if 'item' is a type that is not registered with the 
-        dispatcher.
+#     Raises:
+#         TypeError: if 'item' is a type that is not registered with the 
+#         dispatcher.
 
-    Returns:
-        form.Adjacency: derived from 'item'.
+#     Returns:
+#         form.Adjacency: derived from 'item'.
 
-    """
-    if check.is_adjacency(item = item):
-        return item
-    else:
-        raise TypeError(
-            f'item cannot be converted because it is an unsupported type: '
-            f'{type(item).__name__}')
+#     """
+#     if check.is_adjacency(item = item):
+#         return item
+#     else:
+#         raise TypeError(
+#             f'item cannot be converted because it is an unsupported type: '
+#             f'{type(item).__name__}')
 
 # @to_adjacency.register # type: ignore
 def edges_to_adjacency(item: form.Edges) -> form.Adjacency:
@@ -837,44 +837,47 @@ def matrix_to_adjacency(item: form.Matrix) -> form.Adjacency:
     return adjacency
 
 # @to_adjacency.register # type: ignore 
-def pipeline_to_adjacency(item: hybrid.Pipeline) -> form.Adjacency:
+def linear_to_adjacency(item: form.Linear) -> form.Adjacency:
     """Converts 'item' to an Adjacency.
 
     Args:
-        item (hybrid.Pipeline): item to convert to an Adjacency.
+        item (form.Linear): item to convert to an Adjacency.
 
     Returns:
         form.Adjacency: derived from 'item'.
 
     """
-    if not isinstance(item, (Collection)) or isinstance(item, str):
-        item = [item]
-    adjacency = collections.defaultdict(set)
-    if len(item) == 1:
-        adjacency.update({item: set()})
+    if check.is_linears(item = item):
+        return linears_to_adjacency(item = item)
     else:
-        edges = windowify(item, 2)
-        for edge_pair in edges:
-            if edge_pair[0] in adjacency:
-                adjacency[edge_pair[0]].add(edge_pair[1])
-            else:
-                adjacency[edge_pair[0]] = {edge_pair[1]}
-    return adjacency
+        if not isinstance(item, (Collection)) or isinstance(item, str):
+            item = [item]
+        adjacency = collections.defaultdict(set)
+        if len(item) == 1:
+            adjacency.update({item: set()})
+        else:
+            edges = windowify(item, 2)
+            for edge_pair in edges:
+                if edge_pair[0] in adjacency:
+                    adjacency[edge_pair[0]].add(edge_pair[1])
+                else:
+                    adjacency[edge_pair[0]] = {edge_pair[1]}
+        return adjacency
 
 # @to_adjacency.register # type: ignore 
-def pipelines_to_adjacency(item: hybrid.Pipelines) -> form.Adjacency:
+def linears_to_adjacency(item: form.Linear) -> form.Adjacency:
     """Converts 'item' to an Adjacency.
 
     Args:
-        item (hybrid.Pipelines): item to convert to an Adjacency.
+        item (form.Linear): item to convert to an Adjacency.
 
     Returns:
         form.Adjacency: derived from 'item'.
 
     """
     adjacency = collections.defaultdict(set)
-    for _, pipeline in item.items():
-        pipe_adjacency = pipeline_to_adjacency(item = pipeline)
+    for _, linear in item.items():
+        pipe_adjacency = linear_to_adjacency(item = linear)
         for key, value in pipe_adjacency.items():
             if key in adjacency:
                 for inner_value in value:
@@ -990,17 +993,17 @@ def adjacency_to_matrix(item: form.Adjacency) -> form.Matrix:
     return tuple([matrix, names])    
 
 # @functools.singledispatch  
-def to_pipeline(item: Any) -> hybrid.Pipeline:
-    """Converts 'item' to a Pipeline.
+def to_linear(item: Any) -> form.Linear:
+    """Converts 'item' to a Linear.
     
     Args:
-        item (Any): item to convert to a Pipeline.
+        item (Any): item to convert to a Linear.
 
     Raises:
         TypeError: if 'item' is a type that is not registered.
 
     Returns:
-        hybrid.Pipeline: derived from 'item'.
+        form.Linear: derived from 'item'.
 
     """
     if check.is_tree(item = item):

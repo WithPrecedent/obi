@@ -67,7 +67,6 @@ from .builders.mapping import *
 from .builders.registry import *
 from .builders.sequence import *
 from .builders.trait import *
-from .builders.tree import *
 from .inspectors.check import *
 from .inspectors.clock import *
 from .inspectors.examiner import *
