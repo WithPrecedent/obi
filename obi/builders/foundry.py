@@ -45,8 +45,10 @@ ToDo:
     Determine if there is any value to commented out RegistrarFactory class
 
 """
+
 from __future__ import annotations
 import abc
+import contextlib
 from collections.abc import Mapping, MutableMapping, Sequence
 import copy
 import dataclasses
@@ -97,10 +99,8 @@ class InstanceFactory(BaseFactory):
         """Automatically registers subclass."""
         # Because InstanceFactory is used as a mixin, it is important to
         # call other base class '__init_subclass__' methods, if they exist.
-        try:
+        with contextlib.suppress(AttributeError):
             super().__post_init__(*args, **kwargs) # type: ignore
-        except AttributeError:
-            pass
         key = convert.namify(item = self)
         self.__class__.instances[key] = self
         
@@ -191,10 +191,8 @@ class LibraryFactory(BaseFactory):
         cls.library.deposit(item = cls, name = name)
             
     def __post_init__(self) -> None:
-        try:
+        with contextlib.suppress(AttributeError):
             super().__post_init__(*args, **kwargs) # type: ignore
-        except AttributeError:
-            pass
         key = convert.namify(item = self)
         self.__class__.library.deposit(item = self, name = key)
     
@@ -350,10 +348,8 @@ class SubclassFactory(BaseFactory):
         """Automatically registers subclass."""
         # Because SubclassFactory is used as a mixin, it is important to
         # call other base class '__init_subclass__' methods, if they exist.
-        try:
+        with contextlib.suppress(AttributeError):
             super().__init_subclass__(*args, **kwargs) # type: ignore
-        except AttributeError:
-            pass
         name = convert.namify(item = cls)
         cls.subclasses[name] = cls
     

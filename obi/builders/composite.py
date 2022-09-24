@@ -35,8 +35,10 @@ To Do:
     Integrate Kinds system when it is finished.
     
 """
+
 from __future__ import annotations
 import abc
+import contextlib
 from collections.abc import Collection, Sequence
 import dataclasses
 from typing import Any, Optional, Protocol, Type, TYPE_CHECKING, Union
@@ -213,18 +215,19 @@ class Node(base.Proxy):
         
         """
         # Calls other '__init_subclass__' methods for parent and mixin classes.
-        try:
+        with contextlib.suppress(AttributeError):
             super().__init_subclass__(*args, **kwargs) # type: ignore
-        except AttributeError:
-            pass
         # Copies hashing related methods to a subclass.
         cls.__hash__ = Node.__hash__ # type: ignore
         cls.__eq__ = Node.__eq__ # type: ignore
         cls.__ne__ = Node.__ne__ # type: ignore
-
+   
     def __post_init__(self) -> None:
-        """Initializes class instance attributes."""
-        # Sets 'name' attribute if 'name' is None.
+        """Initializes instance."""
+        # To support usage as a mixin, it is important to call other base class 
+        # '__post_init__' methods, if they exist.
+        with contextlib.suppress(AttributeError):
+            super().__post_init__(*args, **kwargs) # type: ignore
         self.name = self.name or convert.namify(item = self)
                 
     """ Dunder Methods """

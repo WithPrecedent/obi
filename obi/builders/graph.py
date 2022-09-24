@@ -25,17 +25,14 @@ To Do:
 """
 from __future__ import annotations
 import collections
-from collections.abc import (
-    Collection, Hashable, MutableMapping, MutableSequence, Sequence, Set)
+from collections.abc import MutableMapping, MutableSequence, Sequence, Set
 import copy
 import dataclasses
 import itertools
 from typing import Any, Optional, Type, TYPE_CHECKING, Union
 
-from . import base
 from . import composite
 from . import form
-from . import hybrid
 from . import trait
 from ..inspectors import check
 from ..organizers import convert
@@ -1506,3 +1503,80 @@ class System(form.Adjacency, trait.Directed, composite.Graph):
 #         for child in tree.children:
 #             visited.extend(depth_first_search(tree = child, visited = visited))
 #     return visited
+
+ 
+# @dataclasses.dataclass # type: ignore
+# class Pipelines(sequence.Hybrid, base.Composite):
+#     """Base class a collection of Pipeline instances.
+        
+#     Args:
+#         contents (MutableSequence[composite.Node]): list of stored Pipeline instances. 
+#             Defaults to an empty list.
+
+#     """
+#     contents: MutableSequence[Pipeline] = dataclasses.field(
+#         default_factory = list)
+
+#     """ Properties """
+
+#     def endpoint(self) -> Pipeline:
+#         """Returns the endpoint of the stored composite object."""
+#         return self.contents[list(self.contents.keys())[-1]]
+
+#     def root(self) -> Pipeline:
+#         """Returns the root of the stored composite object."""
+#         self.contents[list(self.contents.keys())[0]]
+    
+#     """ Public Methods """
+  
+#     def merge(item: base.Composite, *args: Any, **kwargs: Any) -> None:
+#         """Combines 'item' with the stored composite object.
+
+#         Args:
+#             item (Composite): another Composite object to add to the stored 
+#                 composite object.
+                
+#         """
+#         pass
+
+#     def walk(
+#         self, 
+#         start: Optional[composite.Node] = None,
+#         stop: Optional[composite.Node] = None, 
+#         path: Optional[Pipeline] = None,
+#         return_pipelines: bool = True, 
+#         *args: Any, 
+#         **kwargs: Any) -> Union[Pipeline, Pipelines]:
+#         """Returns path in the stored composite object from 'start' to 'stop'.
+        
+#         Args:
+#             start (Optional[composite.Node]): composite.Node to start paths from. Defaults to None.
+#                 If it is None, 'start' should be assigned to one of the roots
+#                 of the Composite.
+#             stop (Optional[composite.Node]): composite.Node to stop paths. Defaults to None. If it 
+#                 is None, 'start' should be assigned to one of the roots of the 
+#                 Composite.
+#             path (Optional[hybrid.Pipeline]): a path from 'start' to 'stop'. 
+#                 Defaults to None. This parameter is used by recursive methods 
+#                 for determining a path.
+#             return_pipelines (bool): whether to return a Pipelines instance 
+#                 (True) or a hybrid.Pipeline instance (False). Defaults to True.
+
+#         Returns:
+#             Union[hybrid.Pipeline, hybrid.Pipelines]: path(s) through the 
+#                 Composite object. If multiple paths are possible and 
+#                 'return_pipelines' is False, this method should return a 
+#                 Pipeline that includes all such paths appended to each other. If 
+#                 multiple paths are possible and 'return_pipelines' is True, a 
+#                 Pipelines instance with all of the paths should be returned. 
+#                 Defaults to True.
+                            
+#         """
+#         return self.items()
+        
+#     """ Dunder Methods """
+        
+#     @classmethod
+#     def __instancecheck__(cls, instance: object) -> bool:
+#         return check.is_pipelines(item = instance)
+ 

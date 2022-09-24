@@ -32,6 +32,7 @@ import abc
 import collections
 from collections.abc import (
     Collection, Hashable, MutableMapping, MutableSequence, Sequence, Set)
+import contextlib
 import dataclasses
 from typing import Any, ClassVar, Optional, Type, TYPE_CHECKING, Union
 
@@ -387,35 +388,22 @@ class Tree(sequence.Hybrid, composite.Graph, composite.Node):
     example, a user might use 'a_tree["big_branch"]["small_branch"]["a_leaf"]' 
     to access a desired node instead of 'a_tree[2][0][3]' (although the latter
     access technique is also supported).
-    
-    There are several differences between a Tree and a Graph in piles:
-        1) Graphs are more flexible. Trees must have 1 root, are directed, and
-            each node can have only 1 parent node.
-        2) Edges are only implicit in a Tree whereas they are explicit in a 
-            Graph. This allows for certain methods and functions surrounding
-            iteration and traversal to be faster.
-        3) As the size of the data structure increases, a Tree should use less
-            memory because the data about relationships between nodes is not
-            centrally maintained (as with an adjacency matrix). This decreases
-            access time to non-consecutive nodes, but is more efficient for 
-            larger data structures.
-        
+
     Args:
         contents (MutableSequence[Node]): list of stored Tree or other 
             Node instances. Defaults to an empty list.
-        name (Optional[str]): name of Tree node which should match a parent 
-            tree's key name corresponding to this Tree node. All nodes in a Tree
-            must have unique names. The name is used to make all Tree nodes 
-            hashable and capable of quick comparison. Defaults to None, but it
-            should not be left as None when added to a Tree.
+        name (Optional[str]): name of Tree node. Defaults to None.
         parent (Optional[Tree]): parent Tree, if any. Defaults to None.
-  
+        default_factory (Optional[Any]): default value to return or default 
+            function to call when the 'get' method is used. Defaults to None. 
+              
     """
     contents: MutableSequence[composite.Node] = dataclasses.field(
         default_factory = list)
     name: Optional[str] = None
-    parent: Optional[Tree] = None 
-    
+    parent: Optional[Tree] = None
+    default_factory: Optional[Any] = None
+                    
     """ Properties """
 
     @property
@@ -442,7 +430,34 @@ class Tree(sequence.Hybrid, composite.Graph, composite.Node):
     def tree(self) -> Tree:
         """Returns the stored graph as a Tree."""
         return self.contents
-           
+        
+    @property
+    def children(self) -> MutableSequence[composite.Node]:
+        """Returns child nodes of this Node."""
+        return self.contents
+    
+    @children.setter
+    def children(self, value: MutableSequence[composite.Node]) -> None:
+        """Sets child nodes of this Node."""
+        self.contents = value
+        return
+
+    # @property
+    # def endpoint(self) -> Union[composite.Node, composite.Nodes]:
+    #     """Returns the endpoint(s) of the stored graph."""
+    #     if not self.contents:
+    #         return self
+    #     else:
+    #         return self.contents[0].endpoint
+ 
+    # @property
+    # def root(self) -> Union[composite.Node, composite.Nodes]:
+    #     """Returns the root(s) of the stored graph."""
+    #     if self.parent is None:
+    #         return self
+    #     else:
+    #         return self.parent.root  
+                   
     """ Class Methods """
     
     @classmethod
@@ -469,18 +484,7 @@ class Tree(sequence.Hybrid, composite.Graph, composite.Node):
     def from_tree(cls, item: Tree) -> Tree:
         """Creates a Tree instance from a Tree."""
         return cls(contents = item)
-        
-    @property
-    def children(self) -> MutableSequence[composite.Node]:
-        """Returns child nodes of this Node."""
-        return self.contents
-    
-    @children.setter
-    def children(self, value: MutableSequence[composite.Node]) -> None:
-        """Sets child nodes of this Node."""
-        self.contents = value
-        return
-           
+                 
     """ Dunder Methods """
         
     @classmethod
@@ -495,35 +499,13 @@ class Tree(sequence.Hybrid, composite.Graph, composite.Node):
             
         """
         return check.is_tree(item = instance)
-    
-    # def __add__(self, other: composite.Graph) -> None:
-    #     """Adds 'other' to the stored tree using the 'append' method.
 
-    #     Args:
-    #         other (composite.Graph): another Tree, an adjacency list, an 
-    #             edge list, an adjacency matrix, or one or more nodes.
+    def __missing__(self) -> Tree:
+        """Returns an empty tree if one does not exist.
+
+        Returns:
+            Tree: an empty instance of Tree.
             
-    #     """
-    #     self.append(item = other)     
-    #     return 
-
-    # def __radd__(self, other: composite.Graph) -> None:
-    #     """Adds 'other' to the stored tree using the 'prepend' method.
-
-    #     Args:
-    #         other (composite.Graph): another Tree, an adjacency list, an 
-    #             edge list, an adjacency matrix, or one or more nodes.
-            
-    #     """
-    #     self.prepend(item = other)     
-    #     return 
-
-    # def __missing__(self) -> dict[str, Tree]:
-    #     """[summary]
-
-    #     Returns:
-    #         dict[str, Tree]: [description]
-            
-    #     """
-    #     return self.__class__()
-    
+        """
+        return self.__class__()
+        

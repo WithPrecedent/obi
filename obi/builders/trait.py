@@ -17,10 +17,10 @@ License: Apache-2.0
     limitations under the License.
 
 Contents:
-    Directed (ABC): a directed graph with unweighted edges.
+    Directed (Protocol): a directed graph with unweighted edges.
         
 To Do:
-    Complete Network which will use an adjacency matrix for internal storage.
+
     
 """
 from __future__ import annotations
@@ -28,10 +28,11 @@ import abc
 import dataclasses
 from typing import Any, Optional, Protocol, Type, TYPE_CHECKING, Union
 
+from ..organizers import convert
+
+
 if TYPE_CHECKING:
     from . import composite
-    from . import hybrid
-    from . import tree
     
     
 @dataclasses.dataclass
@@ -87,10 +88,9 @@ class Directed(Protocol):
         self, 
         start: Optional[composite.Node] = None,
         stop: Optional[composite.Node] = None, 
-        path: Optional[hybrid.Pipeline] = None,
-        return_pipelines: bool = True, 
+        path: Optional[composite.Linear] = None,
         *args: Any, 
-        **kwargs: Any) -> Union[hybrid.Pipeline, hybrid.Pipelines]:
+        **kwargs: Any) -> composite.Linear:
         """Returns path in the stored graph from 'start' to 'stop'.
         
         Args:
@@ -100,19 +100,12 @@ class Directed(Protocol):
             stop (Optional[composite.Node]): Node to stop paths at. 
                 Defaults to None. If it is None, 'start' should be assigned to 
                 'endpoint'.
-            path (Optional[hybrid.Pipeline]): a path from 'start' to 'stop'. 
+            path (Optional[composite.Linear]): a path from 'start' to 'stop'. 
                 Defaults to None. This parameter is used for recursively
                 determining a path.
-            return_pipelines (bool): whether to return a Pipelines instance 
-                (True) or a Pipeline instance (False). Defaults to True.
 
         Returns:
-            Union[hybrid.Pipeline, hybrid.Pipelines]: path(s) through the 
-                graph. If multiple paths are possible and 'return_pipelines' is 
-                False, this method should return a Pipeline that includes all 
-                such paths appended to each other. If multiple paths are 
-                possible and 'return_pipelines' is True, a Pipelines instance 
-                with all of the paths should be returned. Defaults to True.
+            composite.Linear: path(s) through the graph. 
                             
         """
         pass
@@ -140,14 +133,4 @@ class Directed(Protocol):
         """
         self.prepend(item = other)     
         return 
-
-    # def __str__(self) -> str:
-    #     """Returns prettier str representation of an instance.
-
-    #     Returns:
-    #         str: a formatted str of an instance.
-            
-    #     """
-    #     return represent.beautify(item = self, package = 'bunches')  
-    
-    
+  
