@@ -216,7 +216,7 @@ def serial_contains(
     """Returns whether serial 'item' contains the type(s) in 'contents'.
 
     Args:
-        item (Collection[Any]): item to examine.
+        item (Container[Any]): item to examine.
         contents (Union[Type[Any], tuple[Type[Any], ...]]): types to check for
             in 'item' contents.
 
@@ -695,20 +695,6 @@ def is_class_attribute(item: Union[object, Type[Any]], attribute: str) -> bool:
         hasattr(item, attribute)
         and not is_method(item = item, attribute = attribute)
         and not is_property(item = item, attribute = attribute))
-    
-def is_container(item: Union[object, Type[Any]]) -> bool:
-    """Returns if 'item' is a container and not a str.
-    
-    Args:
-        item (Union[object, Type[Any]]): class or instance to examine.
-        
-    Returns:
-        bool: if 'item' is a container but not a str.
-        
-    """  
-    if not inspect.isclass(item):
-        item = item.__class__ 
-    return issubclass(item, Container) and not issubclass(item, str)
         
 def is_method(item: Union[object, Type[Any]], attribute: Any) -> bool:
     """Returns if 'attribute' is a method of 'item'."""

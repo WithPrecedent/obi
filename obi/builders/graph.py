@@ -139,19 +139,19 @@ class System(form.Adjacency, trait.Directed, composite.Graph):
         return self._find_all_paths(starts = self.root, stops = self.endpoint)
     
     @property
-    def pipeline(self) -> hybrid.Pipeline:
+    def pipeline(self) -> composite.Pipeline:
         """Returns stored graph as a pipeline."""
         pipeline = []
         for pipe in self.pipelines.values():
             pipeline.extend(pipe)
-        return hybrid.Pipeline(contents = pipeline)
+        return composite.Pipeline(contents = pipeline)
     
     @property
-    def pipelines(self) -> hybrid.Pipelines:
+    def pipelines(self) -> composite.Pipelines:
         """Returns stored graph as pipelines."""
         all_paths = self.paths
-        instances = [hybrid.Pipeline(contents = p) for p in all_paths]
-        pipelines = hybrid.Pipelines()
+        instances = [composite.Pipeline(contents = p) for p in all_paths]
+        pipelines = composite.Pipelines()
         for instance in instances:
             pipelines.add(instance, name = 'path')
         return pipelines
@@ -170,13 +170,13 @@ class System(form.Adjacency, trait.Directed, composite.Graph):
         return cls(contents = new_contents)
 
     @classmethod
-    def from_pipeline(cls, item: hybrid.Pipeline) -> System:
+    def from_pipeline(cls, item: composite.Pipeline) -> System:
         """Creates a System instance from a Pipeline."""
         new_contents = convert.pipeline_to_adjacency(item = item)
         return cls(contents = new_contents)
     
     @classmethod
-    def from_pipelines(cls, item: hybrid.Pipelines) -> System:
+    def from_pipelines(cls, item: composite.Pipelines) -> System:
         """Creates a System instance from a Pipeline."""
         new_contents = convert.pipelines_to_adjacency(item = item)
         return cls(contents = new_contents)
@@ -420,7 +420,7 @@ class System(form.Adjacency, trait.Directed, composite.Graph):
         self, 
         start: composite.Node,
         stop: composite.Node, 
-        path: Optional[hybrid.Pipeline] = None) -> hybrid.Pipeline:
+        path: Optional[composite.Pipeline] = None) -> composite.Pipeline:
         """Returns all paths in graph from 'start' to 'stop'.
 
         The code here is adapted from: https://www.python.org/doc/essays/graphs/
@@ -459,7 +459,7 @@ class System(form.Adjacency, trait.Directed, composite.Graph):
     def _find_all_paths(
         self, 
         starts: composite.Nodes, 
-        stops: composite.Nodes) -> hybrid.Pipeline:
+        stops: composite.Nodes) -> composite.Pipeline:
         """Returns all paths between 'starts' and 'stops'.
 
         Args:
@@ -469,7 +469,7 @@ class System(form.Adjacency, trait.Directed, composite.Graph):
                 System.
 
         Returns:
-            hybrid.Pipeline: list of all paths through the System from all 
+            composite.Pipeline: list of all paths through the System from all 
                 'starts' to all 'ends'.
             
         """

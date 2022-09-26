@@ -38,12 +38,13 @@ from __future__ import annotations
 import abc
 from collections.abc import Collection, Container, Hashable, Iterator
 import dataclasses
-from typing import Any, Optional, Protocol, Union
+from typing import Any, Optional, Protocol, runtime_checkable, Union
 
 # from ..inspectors import represent
 
   
 @dataclasses.dataclass # type: ignore
+@runtime_checkable
 class Bunch(Collection, Protocol): # type: ignore
     """Base class for general obi collections.
   
@@ -179,6 +180,7 @@ class Bunch(Collection, Protocol): # type: ignore
     
           
 @dataclasses.dataclass
+@runtime_checkable
 class Composite(Bunch, Protocol):
     """Base class for composite data structures.
     

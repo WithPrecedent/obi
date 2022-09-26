@@ -29,19 +29,18 @@ Contents:
         intended for easy type checking of any arbitrary group of objects to 
         make sure they meet the requirements of being a Node (real or virtual) 
         instance.
-
-          
+      
 To Do:
     Integrate Kinds system when it is finished.
     
 """
-
 from __future__ import annotations
 import abc
 import contextlib
 from collections.abc import Collection, Sequence
 import dataclasses
-from typing import Any, Optional, Protocol, Type, TYPE_CHECKING, Union
+from typing import (
+    Any, Optional, Protocol, runtime_checkable, Type, TYPE_CHECKING, Union)
 
 from . import base
 from ..inspectors import check
@@ -109,6 +108,7 @@ class Edge(Sequence):
     
 
 @dataclasses.dataclass # type: ignore
+@runtime_checkable
 class Graph(base.Composite, Protocol):
     """Base class for graph data structures.
     
@@ -300,6 +300,7 @@ class Node(base.Proxy):
 
  
 @dataclasses.dataclass
+@runtime_checkable
 class Nodes(base.Bunch, Protocol):
     """Collection of Nodes.
     
